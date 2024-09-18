@@ -31,42 +31,50 @@ CREATE TABLE IF NOT EXISTS author(
         birth_place TEXT NOT NULL
         )
 """
-
-# cursor.execute("DELETE FROM author")
-# cursor.execute("DELETE FROM book")
-
 cursor.execute(query)
-authors = []
-for i in range(1,501):
-    author = []
-    author.append(i)
-    author.append(fake.first_name())
-    author.append(fake.last_name())
-    author.append(fake.date_between(start_date='-65y', end_date='-25y'))
-    author.append(fake.city())
-    authors.append(author)
 
 
-cursor.executemany("""
-INSERT INTO author (id,name,surname,birth_date,birth_place) VALUES (?,?,?,?,?) 
-""",authors)
+def is_table_empty(table_name):
+    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+    row_count = cursor.fetchone()[0]
+    return row_count == 0
+
+def author_generator():
+    authors = []
+    for i in range(1,501):
+        author = []
+        author.append(i)
+        author.append(fake.first_name())
+        author.append(fake.last_name())
+        author.append(fake.date_between(start_date='-65y', end_date='-25y'))
+        author.append(fake.city())
+        authors.append(author)
+    return authors
+
+if is_table_empty("author"):
+    cursor.executemany("""
+    INSERT INTO author (id,name,surname,birth_date,birth_place) VALUES (?,?,?,?,?) 
+    """,author_generator())
 
 
-books = []
-for i in range(1000):
-    book = []
-    book.append(i)
-    book.append(fake.sentence(nb_words=3))
-    book.append(fake.word())
-    book.append(random.randint(100,1000))
-    book.append(fake.date_between(start_date='-24y', end_date='now'))
-    book.append(random.randint(1,500))
-    books.append(book)
 
+def book_generator():
+    books = []
+    for i in range(1000):
+        book = []
+        book.append(i)
+        book.append(fake.sentence(nb_words=3))
+        book.append(fake.word())
+        book.append(random.randint(100,1000))
+        book.append(fake.date_between(start_date='-24y', end_date='now'))
+        book.append(random.randint(1,500))
+        books.append(book)
+    return books
 
-cursor.executemany("""
-INSERT INTO book (id,name,category,page_number,date_issue,author_id) VALUES (?,?,?,?,?,?)
-""",books)
+if is_table_empty("book"):
+    cursor.executemany("""
+    INSERT INTO book (id,name,category,page_number,date_issue,author_id) VALUES (?,?,?,?,?,?)
+    """,book_generator())
 
 
 
